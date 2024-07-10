@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SettingsService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">settings_manager</a> &gt; <a href="index.source.html" class="el_package">com.fujitsu.fnc.vta.settingsmanager.service</a> &gt; <span class="el_source">SettingsService.java</span></div><h1>SettingsService.java</h1><pre class="source lang-java linenums">//
+//package com.fujitsu.fnc.vta.settingsmanager.service;
+//import java.io.IOException;
+//import java.text.SimpleDateFormat;
+//import java.util.Calendar;
+//import java.util.Date;
+//import java.util.HashMap;
+//import java.util.List;
+//import java.util.Map;
+//import java.util.Objects;
+//
+//import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.data.domain.Sort;
+//import org.springframework.data.mongodb.core.MongoTemplate;
+//import org.springframework.data.mongodb.core.query.Criteria;
+//import org.springframework.data.mongodb.core.query.Query;
+//import org.springframework.stereotype.Service;
+//
+//import com.fujitsu.fnc.vta.settingsmanager.model.Constants;
+//import com.fujitsu.fnc.vta.settingsmanager.model.Entity;
+//import com.fujitsu.fnc.vta.settingsmanager.model.FilterSet;
+//import com.fujitsu.fnc.vta.settingsmanager.model.Filters;
+//import com.fujitsu.fnc.vta.settingsmanager.model.NEs;
+//import com.fujitsu.fnc.vta.settingsmanager.model.SortList;
+//import com.mongodb.MongoException;
+//import com.mongodb.client.result.DeleteResult;
+//
+//@Service
+//public class SettingsService {
+//	private MongoTemplate mongoTemplate;
+//	 String serviceName = &quot;serviceName&quot;;
+//	 String userId = &quot;userId&quot;;
+//	 String makeMyDefault = &quot;makeMyDefault&quot;;
+//	
+//	@Value(&quot;${scheduler.past.months}&quot;)
+//	int pastMonths;
+//
+//	
+//	public SettingsService(MongoTemplate mongoTemplate) {
+//		super();
+//		this.mongoTemplate = mongoTemplate;
+//	}
+//	
+//	
+//	private SimpleDateFormat dateFormat = new SimpleDateFormat(&quot;yyyy/MM/dd HH:mm:ss&quot;);
+//	private Date date = new Date();
+//
+//	
+//	public Filters addQuery(Filters filters) {
+//           
+//		Criteria criteria = new Criteria().orOperator(
+//				Criteria.where(serviceName).is(filters.getServiceName())
+//				.and(userId).is(filters.getUserId())
+//				.and(&quot;tableSettings&quot;).is(filters.getTableSettings()));
+//		
+//		Query query = Query.query(criteria);
+//		Filters existingSetting = mongoTemplate.findOne(query, Filters.class);
+//		if (existingSetting != null) {
+//		    return null;
+//		}
+//	
+//		if (filters.getSave() &amp;&amp; filters.getMakeMyDefault()) {
+//	        // Check if there are other tablesettings with makeMyDefault true
+//			Criteria criteria1 = new Criteria().orOperator(
+//		        // Default settings condition
+//					Criteria.where(serviceName).is(filters.getServiceName())
+//					.and(userId).is(filters.getUserId())
+//					.and(makeMyDefault).is(true));
+//	        Query makeDefaultQuery = Query.query(criteria1);
+//	        Filters settingsWithMakeDefault = mongoTemplate.findOne(makeDefaultQuery, Filters.class);
+//
+//	       
+//	        if(settingsWithMakeDefault != null) {
+//	            settingsWithMakeDefault.setMakeMyDefault(false);
+//	            mongoSaving(settingsWithMakeDefault);
+//	        }  
+//	      }
+//	
+//		
+//		if (filters.getSave()) {
+//            return mongoSaving(filters);
+//       }
+//		
+//		return filters;
+//	}
+//	
+//	
+//	
+//	public List&lt;Filters&gt; getAllTableSettingsForUser(String userId, String serviceName) {
+//	Query query = Query.query(Criteria.where(Constants.USERID).is(userId).andOperator(Criteria.where(Constants.TABLENAME).is(serviceName)));
+//	return mongoTemplate.find(query,Filters.class);
+//	
+//}
+//	
+//
+//	public Filters getEntityFilterForUser(String userId, String serviceName) {
+//        
+//        Query query ;
+//        // Check if there exists a default setting for the user and service
+//        Filters defaultSettings = mongoTemplate.findOne(
+//                Query.query(
+//                        Criteria.where(userId).is(userId)
+//                                .and(serviceName).is(serviceName)
+//                                .and(makeMyDefault).is(true)
+//                ),
+//                Filters.class
+//        );
+//
+//        if (defaultSettings != null) {
+//        	return defaultSettings;
+//        } 
+//        else {
+//                // If no default settings exist, return system / other table settings
+//                Filters systemSettings = mongoTemplate.findOne(
+//                        Query.query(
+//                                Criteria.where(userId).is(userId)
+//                                        .and(serviceName).is(serviceName)
+//                                        .and(&quot;systemDefault&quot;).is(true)
+//                                        
+//                        ),
+//                        Filters.class
+//                );
+//
+//               
+//              // Return the system settings if found, otherwise return null or handle as needed
+//                if(systemSettings != null ){
+//                	return systemSettings;
+//                }else { 
+//                	return null;
+//                }
+//                
+//        	}
+//		
+//	}
+//	
+//	
+//	public Object[] addQuerybuild(Filters filters) throws Exception {
+//		try {
+//		if (filters.getSave() != null &amp;&amp; filters.getSave()) {
+//	        mongoSaving(filters);
+//	    }
+//	        Query query =  buildQuery(filters);
+//		
+//		Map&lt;String, Class&lt;?&gt;&gt; tableClassMap = new HashMap&lt;&gt;();
+//	    tableClassMap.put(&quot;node&quot;, NEs.class);
+//	    tableClassMap.put(&quot;entity&quot;, Entity.class);
+//	    
+//	    for (Map.Entry&lt;String, Class&lt;?&gt;&gt; entry : tableClassMap.entrySet()) {
+//	        String serviceName1 = entry.getKey();
+//	        Class&lt;?&gt; clazz = entry.getValue();
+//	
+//	        if (filters.getServiceName().contains(serviceName1)) {
+//	          
+//	            List&lt;?&gt; data = mongoTemplate.find(query, clazz);
+//	          
+//	            return data.toArray();
+//	         }
+//	     }
+//	      return null;
+//		} catch (NullPointerException e) {
+//	        throw new NullPointerException(&quot;Null value encountered&quot;);
+//		} catch (MongoException e) {
+//	        throw new IOException(&quot;MongoDB exception occurred&quot;, e);
+//	    }
+//	}
+//	
+//	public Query buildQuery(Filters filters) {
+//		
+//        Query query = new Query();
+//        Criteria criteria = buildCriteria(filters.getFilter());
+//        query.addCriteria(criteria);	        
+//        if (filters.getSortingOrder() != null &amp;&amp; filters.getSortingOrder().getSortList() != null) {
+//            for(SortList sort : filters.getSortingOrder().getSortList()) {
+//                if (&quot;asc&quot;.equalsIgnoreCase(sort.getOrder())) {
+//                    query.with(Sort.by(Sort.Order.asc(sort.getColumnName())));
+//                } else if (&quot;desc&quot;.equalsIgnoreCase(sort.getOrder())) {
+//                    query.with(Sort.by(Sort.Order.desc(sort.getColumnName())));
+//                }
+//            }
+//        }
+//        if(filters.getColumnNames() != null ) {
+//        	filters.getColumnNames().forEach(field -&gt; query.fields().include(field));	
+//        }
+//        return query;
+//    }
+//	
+//	
+//	public Criteria buildCriteria(FilterSet filterSet) {
+//        Criteria criteria = new Criteria();
+//        List&lt;FilterSet.Rule&gt; rules = filterSet.getRules();	        
+//        if (&quot;and&quot;.equalsIgnoreCase(filterSet.getCondition())) {
+//            Criteria[] andCriteria = new Criteria[rules.size()];
+//            for (int i = 0; i &lt; rules.size(); i++) {
+//                andCriteria[i] = createCriteriaFromRule(rules.get(i));
+//            }
+//            criteria.andOperator(andCriteria);
+//        } else if (&quot;or&quot;.equalsIgnoreCase(filterSet.getCondition())) {
+//            Criteria[] orCriteria = new Criteria[rules.size()];
+//            for (int i = 0; i &lt; rules.size(); i++) {
+//                orCriteria[i] = createCriteriaFromRule(rules.get(i));
+//            }
+//            criteria.orOperator(orCriteria);
+//        }
+//
+//        return criteria;
+//    }
+//	
+//	
+//	public Criteria createCriteriaFromRule(FilterSet.Rule rule) {
+//        validateRule(rule);  
+//
+//        if (rule.getOperator() == null &amp;&amp; rule.getField().isEmpty()) {
+//            return null;  
+//        } else {
+//            switch (rule.getOperator().toLowerCase()) {
+//                case &quot;equal&quot;:
+//                    return Criteria.where(rule.getField()).is(rule.getValue());
+//                case &quot;startswith&quot;:
+//                    return Criteria.where(rule.getField()).regex(&quot;^&quot; + rule.getValue());
+//             
+//                default:
+//                    throw new UnsupportedOperationException(&quot;Unsupported operator: &quot; + rule.getOperator());
+//            }
+//        }
+//    }
+//	
+//	public void validateRule(FilterSet.Rule rule) {
+//        Objects.requireNonNull(rule.getField(), &quot;Field cannot be null&quot;);
+//        Objects.requireNonNull(rule.getOperator(), &quot;Operator cannot be null&quot;);
+//        Objects.requireNonNull(rule.getValue(), &quot;Value cannot be null&quot;);
+//    }
+//	
+//	
+//	
+//	public boolean deleteTable(String serviceName, String userId,String filters) {
+//       
+//        	Criteria criteria = new Criteria().andOperator(
+//        			Criteria.where(Constants.USERID).is(userId),
+//        			Criteria.where(Constants.TABLENAME).is(serviceName),
+//        			Criteria.where(Constants.TABLE_SETTINGS).is(filters)
+//                );
+//
+//                Query query = new Query(criteria);
+//
+//                DeleteResult exists = mongoTemplate.remove(query, Filters.class);
+//                	return exists.getDeletedCount()&gt;0;
+//             
+//    }
+//	
+//	public Filters mongoSaving( Filters filters) {
+//		filters.setTimeStamp(dateFormat.format(date));	
+//		mongoTemplate.save(filters);
+//		return filters;
+//	}
+//	public void runSchedulerjob() {
+//	    Calendar cl = Calendar.getInstance();
+//	    cl.setTime(date);
+//	    cl.add(Calendar.MONTH, pastMonths); // Accessing static member directly through class name
+//	    String ttleave = dateFormat.format(date);
+//	    Query query = new Query();
+//	    query.addCriteria(Criteria.where(&quot;timeStamp&quot;).lte(ttleave)).addCriteria(Criteria.where(makeMyDefault).is(false));
+//	    mongoTemplate.remove(query, Filters.class);
+//	}
+//
+//
+//}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+package com.fujitsu.fnc.vta.settingsmanager.service;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Service;
+
+import com.fujitsu.fnc.vta.settingsmanager.model.Constants;
+import com.fujitsu.fnc.vta.settingsmanager.model.Entity;
+import com.fujitsu.fnc.vta.settingsmanager.model.FilterSet;
+import com.fujitsu.fnc.vta.settingsmanager.model.Filters;
+import com.fujitsu.fnc.vta.settingsmanager.model.NEs;
+import com.fujitsu.fnc.vta.settingsmanager.model.SortList;
+import com.mongodb.MongoException;
+import com.mongodb.client.result.DeleteResult;
+
+@Service
+public class SettingsService {
+	private MongoTemplate mongoTemplate;
+	
+	@Value(&quot;${scheduler.past.months}&quot;)
+	int pastMonths;
+<span class="fc" id="L343">    String serviceName1 = &quot;serviceName&quot;;</span>
+<span class="fc" id="L344">    String userId1 = &quot;userId&quot;;</span>
+<span class="fc" id="L345">    String makeMyDefault1 = &quot;makeMyDefault&quot;;</span>
+	
+	public SettingsService(MongoTemplate mongoTemplate) {
+<span class="fc" id="L348">		super();</span>
+<span class="fc" id="L349">		this.mongoTemplate = mongoTemplate;</span>
+<span class="fc" id="L350">	}</span>
+	
+	
+<span class="fc" id="L353">	private SimpleDateFormat dateFormat = new SimpleDateFormat(&quot;yyyy/MM/dd HH:mm:ss&quot;);</span>
+<span class="fc" id="L354">	private Date date = new Date();</span>
+
+	
+	public Filters addQuery(Filters filters) {
+
+<span class="fc" id="L359">		Criteria criteria = new Criteria().orOperator(</span>
+<span class="fc" id="L360">				Criteria.where(serviceName1).is(filters.getServiceName())</span>
+<span class="fc" id="L361">				.and(userId1).is(filters.getUserId())</span>
+<span class="fc" id="L362">				.and(&quot;tableSettings&quot;).is(filters.getTableSettings()));</span>
+		
+<span class="fc" id="L364">		Query query = Query.query(criteria);</span>
+<span class="fc" id="L365">		Filters existingSetting = mongoTemplate.findOne(query, Filters.class);</span>
+<span class="pc bpc" id="L366" title="1 of 2 branches missed.">		if (existingSetting != null) {</span>
+<span class="nc" id="L367">		    return null;</span>
+		}
+	
+<span class="pc bpc" id="L370" title="1 of 4 branches missed.">		if (filters.getSave() &amp;&amp; filters.getMakeMyDefault()) {</span>
+	        // Check if there are other tablesettings with makeMyDefault true
+<span class="fc" id="L372">			Criteria criteria1 = new Criteria().orOperator(</span>
+		        // Default settings condition
+<span class="fc" id="L374">					Criteria.where(serviceName1).is(filters.getServiceName())</span>
+<span class="fc" id="L375">					.and(userId1).is(filters.getUserId())</span>
+<span class="fc" id="L376">					.and(&quot;makeMyDefault&quot;).is(true));</span>
+<span class="fc" id="L377">	        Query makeDefaultQuery = Query.query(criteria1);</span>
+<span class="fc" id="L378">	        Filters settingsWithMakeDefault = mongoTemplate.findOne(makeDefaultQuery, Filters.class);</span>
+
+	       
+<span class="pc bpc" id="L381" title="1 of 2 branches missed.">	        if(settingsWithMakeDefault != null) {</span>
+<span class="nc" id="L382">	            settingsWithMakeDefault.setMakeMyDefault(false);</span>
+<span class="nc" id="L383">	            mongoSaving(settingsWithMakeDefault);</span>
+	        }  
+	      }
+	
+		
+<span class="fc bfc" id="L388" title="All 2 branches covered.">		if (filters.getSave()) {</span>
+<span class="fc" id="L389">            return mongoSaving(filters);</span>
+       }
+		
+<span class="fc" id="L392">		return filters;</span>
+	}
+	
+	
+	
+	public List&lt;Filters&gt; getAllTableSettingsForUser(String userId, String serviceName) {
+<span class="fc" id="L398">	Query query = Query.query(Criteria.where(Constants.USERID).is(userId).andOperator(Criteria.where(Constants.TABLENAME).is(serviceName)));</span>
+<span class="fc" id="L399">	return mongoTemplate.find(query,Filters.class);</span>
+	
+}
+	
+
+	public Filters getEntityFilterForUser(String userId, String serviceName) {
+        
+        Query query ;
+        // Check if there exists a default setting for the user and service
+<span class="fc" id="L408">        Filters defaultSettings = mongoTemplate.findOne(</span>
+<span class="fc" id="L409">                Query.query(</span>
+<span class="fc" id="L410">                        Criteria.where(userId1).is(userId)</span>
+<span class="fc" id="L411">                                .and(serviceName1).is(serviceName)</span>
+<span class="fc" id="L412">                                .and(makeMyDefault1).is(true)</span>
+                ),
+                Filters.class
+        );
+
+<span class="pc bpc" id="L417" title="1 of 2 branches missed.">        if (defaultSettings != null) {</span>
+<span class="nc" id="L418">        	return defaultSettings;</span>
+        } 
+        else {
+                // If no default settings exist, return system / other table settings
+<span class="fc" id="L422">                Filters systemSettings = mongoTemplate.findOne(</span>
+<span class="fc" id="L423">                        Query.query(</span>
+<span class="fc" id="L424">                                Criteria.where(userId1).is(userId)</span>
+<span class="fc" id="L425">                                        .and(serviceName1).is(serviceName)</span>
+<span class="fc" id="L426">                                        .and(&quot;systemDefault&quot;).is(true)</span>
+                                       
+                        ),
+                        Filters.class
+                );
+
+               
+              // Return the system settings if found, otherwise return null or handle as needed
+<span class="pc bpc" id="L434" title="1 of 2 branches missed.">                if(systemSettings != null ){</span>
+<span class="nc" id="L435">                	return systemSettings;</span>
+                }else { 
+<span class="fc" id="L437">                	return null;</span>
+                }
+                
+        	}
+		
+	}
+	
+	
+	public Object[] addQuerybuild(Filters filters) throws Exception {
+		try {
+<span class="fc bfc" id="L447" title="All 4 branches covered.">		if (filters.getSave() != null &amp;&amp; filters.getSave()) {</span>
+<span class="fc" id="L448">	        mongoSaving(filters);</span>
+	    }
+<span class="fc" id="L450">	        Query query =  buildQuery(filters);</span>
+		
+<span class="fc" id="L452">		Map&lt;String, Class&lt;?&gt;&gt; tableClassMap = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L453">	    tableClassMap.put(&quot;node&quot;, NEs.class);</span>
+<span class="fc" id="L454">	    tableClassMap.put(&quot;entity&quot;, Entity.class);</span>
+
+<span class="pc bpc" id="L456" title="1 of 2 branches missed.">	    for (Map.Entry&lt;String, Class&lt;?&gt;&gt; entry : tableClassMap.entrySet()) {</span>
+<span class="fc" id="L457">	        String serviceName = entry.getKey();</span>
+<span class="fc" id="L458">	        Class&lt;?&gt; clazz = entry.getValue();</span>
+	
+<span class="pc bpc" id="L460" title="1 of 2 branches missed.">	        if (filters.getServiceName().contains(serviceName)) {</span>
+	          
+<span class="fc" id="L462">	            List&lt;?&gt; data = mongoTemplate.find(query, clazz);</span>
+	          
+<span class="fc" id="L464">	            return data.toArray();</span>
+	         }
+<span class="nc" id="L466">	     }</span>
+<span class="nc" id="L467">	      return null;</span>
+<span class="fc" id="L468">		} catch (NullPointerException e) {</span>
+<span class="fc" id="L469">	        throw new NullPointerException(&quot;Null value encountered&quot;);</span>
+<span class="nc" id="L470">		} catch (MongoException e) {</span>
+<span class="nc" id="L471">	        throw new IOException(&quot;MongoDB exception occurred&quot;, e);</span>
+	    }
+	}
+	
+	public Query buildQuery(Filters filters) {
+		
+<span class="fc" id="L477">        Query query = new Query();</span>
+<span class="fc" id="L478">        Criteria criteria = buildCriteria(filters.getFilter());</span>
+<span class="fc" id="L479">        query.addCriteria(criteria);	        </span>
+<span class="pc bpc" id="L480" title="3 of 4 branches missed.">        if (filters.getSortingOrder() != null &amp;&amp; filters.getSortingOrder().getSortList() != null) {</span>
+<span class="nc bnc" id="L481" title="All 2 branches missed.">            for(SortList sort : filters.getSortingOrder().getSortList()) {</span>
+<span class="nc bnc" id="L482" title="All 2 branches missed.">                if (&quot;asc&quot;.equalsIgnoreCase(sort.getOrder())) {</span>
+<span class="nc" id="L483">                    query.with(Sort.by(Sort.Order.asc(sort.getColumnName())));</span>
+<span class="nc bnc" id="L484" title="All 2 branches missed.">                } else if (&quot;desc&quot;.equalsIgnoreCase(sort.getOrder())) {</span>
+<span class="nc" id="L485">                    query.with(Sort.by(Sort.Order.desc(sort.getColumnName())));</span>
+                }
+<span class="nc" id="L487">            }</span>
+        }
+<span class="fc bfc" id="L489" title="All 2 branches covered.">        if(filters.getColumnNames() != null ) {</span>
+<span class="fc" id="L490">        	filters.getColumnNames().forEach(field -&gt; query.fields().include(field));	</span>
+        }
+<span class="fc" id="L492">        return query;</span>
+    }
+	
+	
+	public Criteria buildCriteria(FilterSet filterSet) {
+<span class="fc" id="L497">        Criteria criteria = new Criteria();</span>
+<span class="fc" id="L498">        List&lt;FilterSet.Rule&gt; rules = filterSet.getRules();	        </span>
+<span class="fc bfc" id="L499" title="All 2 branches covered.">        if (&quot;and&quot;.equalsIgnoreCase(filterSet.getCondition())) {</span>
+<span class="fc" id="L500">            Criteria[] andCriteria = new Criteria[rules.size()];</span>
+<span class="fc bfc" id="L501" title="All 2 branches covered.">            for (int i = 0; i &lt; rules.size(); i++) {</span>
+<span class="fc" id="L502">                andCriteria[i] = createCriteriaFromRule(rules.get(i));</span>
+            }
+<span class="fc" id="L504">            criteria.andOperator(andCriteria);</span>
+<span class="pc bpc" id="L505" title="1 of 2 branches missed.">        } else if (&quot;or&quot;.equalsIgnoreCase(filterSet.getCondition())) {</span>
+<span class="nc" id="L506">            Criteria[] orCriteria = new Criteria[rules.size()];</span>
+<span class="nc bnc" id="L507" title="All 2 branches missed.">            for (int i = 0; i &lt; rules.size(); i++) {</span>
+<span class="nc" id="L508">                orCriteria[i] = createCriteriaFromRule(rules.get(i));</span>
+            }
+<span class="nc" id="L510">            criteria.orOperator(orCriteria);</span>
+        }
+
+<span class="fc" id="L513">        return criteria;</span>
+    }
+	
+	
+	public Criteria createCriteriaFromRule(FilterSet.Rule rule) {
+<span class="fc" id="L518">        validateRule(rule);  </span>
+
+<span class="pc bpc" id="L520" title="3 of 4 branches missed.">        if (rule.getOperator() == null &amp;&amp; rule.getField().isEmpty()) {</span>
+<span class="nc" id="L521">            return null;  </span>
+        } else {
+<span class="fc bfc" id="L523" title="All 3 branches covered.">            switch (rule.getOperator().toLowerCase()) {</span>
+                case &quot;equal&quot;:
+<span class="fc" id="L525">                    return Criteria.where(rule.getField()).is(rule.getValue());</span>
+                case &quot;startswith&quot;:
+<span class="fc" id="L527">                    return Criteria.where(rule.getField()).regex(&quot;^&quot; + rule.getValue());</span>
+             
+                default:
+<span class="fc" id="L530">                    throw new UnsupportedOperationException(&quot;Unsupported operator: &quot; + rule.getOperator());</span>
+            }
+        }
+    }
+	
+	public void validateRule(FilterSet.Rule rule) {
+<span class="fc" id="L536">        Objects.requireNonNull(rule.getField(), &quot;Field cannot be null&quot;);</span>
+<span class="fc" id="L537">        Objects.requireNonNull(rule.getOperator(), &quot;Operator cannot be null&quot;);</span>
+<span class="fc" id="L538">        Objects.requireNonNull(rule.getValue(), &quot;Value cannot be null&quot;);</span>
+<span class="fc" id="L539">    }</span>
+	
+	
+	
+	public boolean deleteTable(String serviceName, String userId,String filters) {
+        	
+<span class="fc" id="L545">        	Criteria criteria = new Criteria().andOperator(</span>
+<span class="fc" id="L546">        			Criteria.where(Constants.USERID).is(userId),</span>
+<span class="fc" id="L547">        			Criteria.where(Constants.TABLENAME).is(serviceName),</span>
+<span class="fc" id="L548">        			Criteria.where(Constants.TABLE_SETTINGS).is(filters)</span>
+                );
+
+<span class="fc" id="L551">                Query query = new Query(criteria);</span>
+
+<span class="fc" id="L553">                DeleteResult exists = mongoTemplate.remove(query, Filters.class);</span>
+               
+<span class="fc bfc" id="L555" title="All 2 branches covered.">                	return exists.getDeletedCount()&gt;0;</span>
+            
+    }
+	
+	public Filters mongoSaving( Filters filters) {
+<span class="fc" id="L560">		filters.setTimeStamp(dateFormat.format(date));	</span>
+<span class="fc" id="L561">		mongoTemplate.save(filters);</span>
+<span class="fc" id="L562">		return filters;</span>
+	}
+	public void runSchedulerjob() {
+<span class="fc" id="L565">	    Calendar cl = Calendar.getInstance();</span>
+<span class="fc" id="L566">	    cl.setTime(date);</span>
+<span class="fc" id="L567">	    cl.add(Calendar.MONTH, pastMonths); // Accessing static member directly through class name</span>
+<span class="fc" id="L568">	    String ttleave = dateFormat.format(date);</span>
+<span class="fc" id="L569">	    Query query = new Query();</span>
+<span class="fc" id="L570">	    query.addCriteria(Criteria.where(&quot;timeStamp&quot;).lte(ttleave)).addCriteria(Criteria.where(makeMyDefault1).is(false));</span>
+<span class="fc" id="L571">	    mongoTemplate.remove(query, Filters.class);</span>
+<span class="fc" id="L572">	}</span>
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

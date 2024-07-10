@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SettingController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">settings_manager</a> &gt; <a href="index.source.html" class="el_package">com.fujitsu.fnc.vta.settingsmanager.controller</a> &gt; <span class="el_source">SettingController.java</span></div><h1>SettingController.java</h1><pre class="source lang-java linenums">
+
+
+
+
+
+
+
+
+
+
+
+
+
+package com.fujitsu.fnc.vta.settingsmanager.controller;
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fujitsu.fnc.vta.settingsmanager.enums.ResponseStatus;
+import com.fujitsu.fnc.vta.settingsmanager.model.Constants;
+import com.fujitsu.fnc.vta.settingsmanager.model.Filters;
+import com.fujitsu.fnc.vta.settingsmanager.model.Response;
+import com.fujitsu.fnc.vta.settingsmanager.service.SettingsService;
+
+
+@RequestMapping(&quot;/vta/api/v1&quot;)
+@RestController
+public class SettingController {
+	
+<span class="fc" id="L42">private static Logger logger = LogManager.getLogger(SettingController.class);</span>
+	
+	private SettingsService service;
+	
+	public SettingController(SettingsService service) {
+<span class="fc" id="L47">		super();</span>
+<span class="fc" id="L48">		this.service = service;</span>
+<span class="fc" id="L49">	}</span>
+	
+	@PostMapping(&quot;/create&quot;)
+	public ResponseEntity&lt;Response&gt; addNodeFilters(@RequestBody Filters filters) {
+	try {
+<span class="fc" id="L54">		logger.info(Constants.BRACKETS, Constants.FILTER, filters);</span>
+		
+<span class="fc" id="L56">		ResponseStatus responseStatus = null;</span>
+
+<span class="fc" id="L58">		Filters	 resp  = service.addQuery(filters);</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">		logger.info(Constants.BRACKETS, Constants.FILTER,!ObjectUtils.isEmpty(resp));</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">		if(resp != null) {</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">         responseStatus = !ObjectUtils.isEmpty(resp) ? ResponseStatus.SUCCESS : ResponseStatus.FAILURE;</span>
+		}else {
+<span class="fc" id="L63">			responseStatus = ResponseStatus.ALREADY_EXISTS;	</span>
+<span class="fc" id="L64">			return ResponseEntity.status(responseStatus.getHttpStatus()) </span>
+<span class="fc" id="L65">	                .body(Response.builder()</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">	                        .status(!ObjectUtils.isEmpty(resp))</span>
+<span class="fc" id="L67">	                        .message(Constants.ALREADY_EXISTS)</span>
+<span class="fc" id="L68">	                        .data(resp)</span>
+<span class="fc" id="L69">	                        .build());</span>
+		}
+        
+<span class="fc" id="L72">      return ResponseEntity.status(responseStatus.getHttpStatus()) </span>
+<span class="fc" id="L73">                .body(Response.builder()</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">                        .status(!ObjectUtils.isEmpty(resp))</span>
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">                        .message(resp.getSave()?responseStatus.getMessage():&quot;data not saved into database&quot;)</span>
+<span class="fc" id="L76">                        .data(resp)</span>
+<span class="fc" id="L77">                        .build());</span>
+	}
+<span class="fc" id="L79">    catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L80">      logger.error(Constants.BRACKETS, Constants.ERROR, e.getMessage(), e);</span>
+<span class="fc" id="L81">      return ResponseEntity.status(HttpStatus.BAD_REQUEST)</span>
+<span class="fc" id="L82">              .body(Response.builder()</span>
+<span class="fc" id="L83">                      .status(false)</span>
+<span class="fc" id="L84">                      .message(&quot;Save parameter must be true to save data.&quot;)</span>
+<span class="fc" id="L85">                      .build());</span>
+<span class="fc" id="L86">  } catch (Exception e) {</span>
+      ResponseStatus responseStatus;
+<span class="pc bpc" id="L88" title="1 of 4 branches missed.">      if (e.getMessage() != null &amp;&amp; e.getMessage().contains(Constants.RESOURCE)) {</span>
+<span class="fc" id="L89">          responseStatus = ResponseStatus.RESOURCE_EXISTS;</span>
+      } else {
+<span class="fc" id="L91">          responseStatus = ResponseStatus.INVALID_DATA;</span>
+      }
+<span class="fc" id="L93">      logger.error(Constants.BRACKETS, Constants.ERROR, e.getMessage(), e);</span>
+<span class="fc" id="L94">      return ResponseEntity.status(responseStatus.getHttpStatus())</span>
+<span class="fc" id="L95">              .body(Response.builder()</span>
+<span class="fc" id="L96">                      .status(true)</span>
+<span class="fc" id="L97">                      .message(responseStatus.getMessage())</span>
+<span class="fc" id="L98">                      .build());</span>
+        }
+    }
+	
+
+	@PostMapping(&quot;/buildQuery&quot;)
+	public ResponseEntity&lt;Response&gt; saveAndBuildQuery(@RequestBody Filters filters) {
+	    try {
+<span class="fc" id="L106">	        logger.info(Constants.BRACKETS, Constants.BUILD_QUERY, filters);</span>
+	        
+	        
+<span class="fc" id="L109">	        Object[] savedSettings = service.addQuerybuild(filters);</span>
+	       
+<span class="fc" id="L111">	        return ResponseEntity.ok(Response.builder()</span>
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">	                .status(!ObjectUtils.isEmpty(savedSettings)) </span>
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">	                .message(!ObjectUtils.isEmpty(savedSettings) ?Constants.QUERY_SUCCESS:Constants.NODATA)</span>
+<span class="fc" id="L114">	                .data(savedSettings) </span>
+<span class="fc" id="L115">	                .build());</span>
+<span class="fc" id="L116">	    } catch (Exception e) {</span>
+<span class="fc" id="L117">	        logger.error(Constants.BRACKETS, Constants.ERROR_BUILD, e.getMessage(), e);</span>
+	        
+	        
+<span class="fc" id="L120">	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)</span>
+<span class="fc" id="L121">	                .body(Response.builder()</span>
+<span class="fc" id="L122">	                        .status(false)</span>
+<span class="fc" id="L123">	                        .message(Constants.FAILURE_BUILD )</span>
+<span class="fc" id="L124">	                        .build());</span>
+	    }
+	}
+
+	
+	@DeleteMapping(&quot;/delete/{tableSetting}&quot;)
+    public ResponseEntity&lt;Response&gt; deleteTable(String userId, String serviceName , String filters) {
+        try {
+<span class="fc" id="L132">            logger.info(Constants.BRACKETS, Constants.DELETE_TABLE, filters);</span>
+
+<span class="fc" id="L134">            boolean resp = service.deleteTable(serviceName,userId,filters);</span>
+            
+<span class="fc bfc" id="L136" title="All 2 branches covered.">            if(resp) {</span>
+<span class="fc" id="L137">            return ResponseEntity.ok(Response.builder()</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">                    .status(!ObjectUtils.isEmpty(resp))</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">                    .message(!ObjectUtils.isEmpty(resp)?Constants.TABLE_DELETED:Constants.FAILURE_DELETE)</span>
+<span class="fc" id="L140">                    .data(filters) </span>
+<span class="fc" id="L141">                    .build());</span>
+            }
+            else {
+<span class="fc" id="L144">            	return ResponseEntity.ok(Response.builder()</span>
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">                        .status(!ObjectUtils.isEmpty(resp))</span>
+<span class="fc" id="L146">                        .message(&quot;the data not found in database&quot;)</span>
+<span class="fc" id="L147">                        .data(filters) </span>
+<span class="fc" id="L148">                        .build());</span>
+            }
+<span class="fc" id="L150">        } catch (Exception e) {</span>
+<span class="fc" id="L151">            logger.error(Constants.BRACKETS, Constants.ERROR_DELETE, e.getMessage(), e);</span>
+
+<span class="fc" id="L153">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)</span>
+<span class="fc" id="L154">                    .body(Response.builder()</span>
+<span class="fc" id="L155">                            .status(false)</span>
+<span class="fc" id="L156">                            .message(Constants.FAILURE_DELETE)</span>
+<span class="fc" id="L157">                            .data(filters) </span>
+<span class="fc" id="L158">                            .build());</span>
+        }
+    }
+	
+
+	
+	@GetMapping(&quot;/Default/{userId}/{serviceName}&quot;)
+	public ResponseEntity&lt;Response&gt; getDefaultTableSettings(@PathVariable String userId, @PathVariable String serviceName) {
+	    try {
+<span class="fc" id="L167">	    	logger.info(Constants.BRACKETS,Constants.FILTER_GET_ID , serviceName);</span>
+<span class="fc" id="L168">	        Filters resp = service.getEntityFilterForUser(userId, serviceName);</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">	        logger.info(Constants.BRACKETS, Constants.FILTER_GET, !ObjectUtils.isEmpty(resp));</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">	        ResponseStatus status = !ObjectUtils.isEmpty(resp) ? ResponseStatus.OK : ResponseStatus.NODATA;</span>
+	        
+<span class="fc" id="L172">	        return ResponseEntity.status(HttpStatus.OK) </span>
+<span class="fc" id="L173">	                .body(Response.builder()</span>
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">	                        .status(!ObjectUtils.isEmpty(resp))</span>
+<span class="fc" id="L175">	                        .message(status.getMessage())</span>
+<span class="fc" id="L176">	                        .data(resp)</span>
+<span class="fc" id="L177">	                        .build());</span>
+	    
+<span class="fc" id="L179">	    } catch (Exception e) {</span>
+<span class="fc" id="L180">	    	ResponseStatus responseStatus = ResponseStatus.INVALID_DATA;</span>
+<span class="fc" id="L181">          logger.error(Constants.BRACKETS,Constants.ERROR ,e.getMessage(), e); </span>
+<span class="fc" id="L182">          return ResponseEntity.status(responseStatus.getHttpStatus())</span>
+<span class="fc" id="L183">                  .body(Response.builder()</span>
+<span class="fc" id="L184">                          .status(false)</span>
+<span class="fc" id="L185">                          .message(responseStatus.getMessage())</span>
+<span class="fc" id="L186">                          .build());</span>
+	    }
+	}
+
+		
+	@GetMapping(&quot;/Filters/{userId}/{serviceName}&quot;)
+	public ResponseEntity&lt;Response&gt; getAllTableSettingsForUser(@PathVariable String userId, @PathVariable String serviceName) {
+	    try {
+<span class="fc" id="L194">	    	logger.info(Constants.BRACKETS,Constants.FILTER_GET_ID , serviceName);</span>
+<span class="fc" id="L195">	        List&lt;Filters&gt; resp = service.getAllTableSettingsForUser(userId, serviceName);</span>
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">	        logger.info(Constants.BRACKETS, Constants.FILTER_GET, !ObjectUtils.isEmpty(resp));</span>
+<span class="pc bpc" id="L197" title="1 of 2 branches missed.">	        ResponseStatus status = !ObjectUtils.isEmpty(resp) ? ResponseStatus.OK : ResponseStatus.NODATA;</span>
+	        
+<span class="fc" id="L199">	        return ResponseEntity.status(HttpStatus.OK) </span>
+<span class="fc" id="L200">	                .body(Response.builder()</span>
+<span class="pc bpc" id="L201" title="1 of 2 branches missed.">	                        .status(!ObjectUtils.isEmpty(resp))</span>
+<span class="fc" id="L202">	                        .message(status.getMessage())</span>
+<span class="fc" id="L203">	                        .data(resp)</span>
+<span class="fc" id="L204">	                        .build());</span>
+	    
+<span class="fc" id="L206">	    } catch (Exception e) {</span>
+<span class="fc" id="L207">	    	ResponseStatus responseStatus = ResponseStatus.INVALID_DATA;</span>
+<span class="fc" id="L208">          logger.error(Constants.BRACKETS,Constants.ERROR ,e.getMessage(), e); </span>
+<span class="fc" id="L209">          return ResponseEntity.status(responseStatus.getHttpStatus())</span>
+<span class="fc" id="L210">                  .body(Response.builder()</span>
+<span class="fc" id="L211">                          .status(false)</span>
+<span class="fc" id="L212">                          .message(responseStatus.getMessage())</span>
+<span class="fc" id="L213">                          .build());</span>
+	    }
+	}	
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

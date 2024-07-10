@@ -1,0 +1,13 @@
+com\fujitsu\fnc\vta\settingsmanager\component\ComponentTest.class
+com\fujitsu\fnc\vta\settingsmanager\model\FiltersTest.class
+com\fujitsu\fnc\vta\settingsmanager\enums\ResponseStatusTest.class
+com\fujitsu\fnc\vta\settingsmanager\model\NEsTest.class
+com\fujitsu\fnc\vta\settingsmanager\service\SettingsServiceTest.class
+com\fujitsu\fnc\vta\settingsmanager\model\ConstantsTest.class
+com\fujitsu\fnc\vta\settingsmanager\controller\SettingControllerTest.class
+com\fujitsu\fnc\vta\settingsmanager\model\SortListTest.class
+com\fujitsu\fnc\vta\settingsmanager\model\EntityTest.class
+com\fujitsu\fnc\vta\settingsmanager\SettingsManagerApplicationTest.class
+com\fujitsu\fnc\vta\settingsmanager\model\FilterSetTest.class
+com\fujitsu\fnc\vta\settingsmanager\model\ResponseTest.class
+com\fujitsu\fnc\vta\settingsmanager\model\SortingSetTest.class

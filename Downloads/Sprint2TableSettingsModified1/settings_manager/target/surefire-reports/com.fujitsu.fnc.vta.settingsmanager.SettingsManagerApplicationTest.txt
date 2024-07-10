@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.fujitsu.fnc.vta.settingsmanager.SettingsManagerApplicationTest
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.822 s -- in com.fujitsu.fnc.vta.settingsmanager.SettingsManagerApplicationTest

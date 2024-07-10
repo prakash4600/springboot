@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NEs.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">settings_manager</a> &gt; <a href="index.source.html" class="el_package">com.fujitsu.fnc.vta.settingsmanager.model</a> &gt; <span class="el_source">NEs.java</span></div><h1>NEs.java</h1><pre class="source lang-java linenums">package com.fujitsu.fnc.vta.settingsmanager.model;
+
+
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import io.micrometer.core.instrument.config.validate.Validated.Secret;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+<span class="pc bnc" id="L20" title="All 538 branches missed.">@Data</span>
+<span class="fc" id="L21">@NoArgsConstructor</span>
+<span class="nc" id="L22">@AllArgsConstructor</span>
+@Document(collection = &quot;NODES&quot;)
+public class NEs {
+
+    @Id
+<span class="fc" id="L27">    private String nodeId;</span>
+
+    @NotBlank(message = Constants.NODE_NOT_EMPTY)
+<span class="fc" id="L30">    private String nodeName;</span>
+
+    @Indexed
+<span class="fc" id="L33">    private String nodeType;</span>
+
+    @NotBlank(message = Constants.NODE_NOT_EMPTY)
+<span class="fc" id="L36">    private String parentNodeGroupId;</span>
+
+    @NotBlank(message = Constants.NODE_NOT_EMPTY)
+<span class="fc" id="L39">    private String parentNodeGroupName;</span>
+
+<span class="fc" id="L41">    private String parentNodeId;</span>
+<span class="fc" id="L42">    private String parentNodeName;</span>
+
+    @NotBlank(message = Constants.NODE_NOT_EMPTY)
+<span class="fc" id="L45">    private String productName;</span>
+
+    @NotBlank(message = Constants.NODE_NOT_EMPTY)
+<span class="fc" id="L48">    private String productId;</span>
+
+    @NotBlank(message = Constants.NODE_NOT_EMPTY)
+<span class="fc" id="L51">    private String productVersion;</span>
+
+<span class="fc" id="L53">    private String description;</span>
+    @Indexed
+<span class="fc" id="L55">    private String vendorName;</span>
+
+    @NotBlank(message = Constants.NODE_NOT_EMPTY)
+<span class="fc" id="L58">    private String protocol;</span>
+
+<span class="fc" id="L60">    private String snmpSysObjectId;</span>
+<span class="fc" id="L61">    private String snmpV1V2cCommunity;</span>
+<span class="fc" id="L62">    private String snmpv3SecurityLevel;</span>
+<span class="fc" id="L63">    private String snmpv3AuthAlgorithm;</span>
+<span class="fc" id="L64">    private String snmpv3PrivAlgorithm;</span>
+    @JsonIgnore
+<span class="nc" id="L66">    private Secret snmpv3Auth;</span>
+    @JsonIgnore
+<span class="nc" id="L68">    private Secret snmpv3Priv;</span>
+<span class="fc" id="L69">    private String snmpv3EngineId;</span>
+
+    @NotBlank(message = Constants.NODE_NOT_EMPTY)
+<span class="fc" id="L72">    private String nodeProfileId;</span>
+
+    @NotBlank(message = Constants.NODE_NOT_EMPTY)
+<span class="fc" id="L75">    private String nodeProfileName;</span>
+
+<span class="fc" id="L77">    private String username;</span>
+    @JsonIgnore
+<span class="nc" id="L79">    private Secret password;</span>
+
+    @Indexed
+<span class="fc" id="L82">    private String connectionType;</span>
+
+<span class="fc" id="L84">    private String primaryIpv4Address;</span>
+
+<span class="fc" id="L86">    private String primaryIpv6Address;</span>
+
+<span class="fc" id="L88">    private String primaryPort;</span>
+<span class="fc" id="L89">    private String secondaryIpv4Address;</span>
+<span class="fc" id="L90">    private String secondaryIpv6Address;</span>
+<span class="fc" id="L91">    private String secondaryPort;</span>
+<span class="fc" id="L92">    private String externalId;</span>
+
+<span class="fc" id="L94">    private String plugin;</span>
+<span class="fc" id="L95">    private String telemetryUsername;</span>
+    @JsonIgnore
+<span class="nc" id="L97">    private Secret telemetryPassword;</span>
+<span class="fc" id="L98">    private String telemetryPort;</span>
+
+<span class="fc" id="L100">    private List&lt;String&gt; domainIdList;</span>
+<span class="fc" id="L101">    private List&lt;String&gt; domainNameList;</span>
+
+<span class="fc" id="L103">    private String requestsPerTimePeriod;</span>
+
+    @NotBlank(message = Constants.NODE_NOT_EMPTY)
+    @Indexed
+<span class="fc" id="L107">    private String adminState;</span>
+
+<span class="fc" id="L109">    private String office;</span>
+<span class="fc" id="L110">    private Double latitude;</span>
+<span class="fc" id="L111">    private Double longitude;</span>
+<span class="fc" id="L112">    private String zone;</span>
+<span class="fc" id="L113">    private String area;</span>
+<span class="fc" id="L114">    private String region;</span>
+<span class="fc" id="L115">    private String facility;</span>
+<span class="fc" id="L116">    private String building;</span>
+<span class="fc" id="L117">    private String floor;</span>
+<span class="fc" id="L118">    private String rack;</span>
+<span class="fc" id="L119">    private String location;</span>
+<span class="fc" id="L120">    private String memo;</span>
+<span class="fc" id="L121">    private String operState;</span>
+<span class="fc" id="L122">    private String timezone;</span>
+<span class="fc" id="L123">    private Date lastAlarmSyncAt;</span>
+
+<span class="fc" id="L125">    private String primaryGatewayNodeId;</span>
+<span class="fc" id="L126">    private String primaryGatewayNodeName;</span>
+<span class="fc" id="L127">    private String secondaryGatewayNodeId;</span>
+<span class="fc" id="L128">    private String secondaryGatewayNodeName;</span>
+
+<span class="fc" id="L130">    private String nfmPStatsAuxSshUsername;</span>
+    @JsonIgnore
+<span class="nc" id="L132">    private Secret nfmPStatsAuxSshSecret;</span>
+
+<span class="fc" id="L134">    private String fmPropertyFilter;</span>
+<span class="fc" id="L135">    private String fmAdvancedFilter;</span>
+<span class="fc" id="L136">    private String pmRegisterLogToFilePropertyFilter;</span>
+<span class="fc" id="L137">    private String pmRegisterSasLogToFilePropertyFilter;</span>
+
+<span class="fc" id="L139">    private boolean isDeleted;</span>
+
+<span class="fc" id="L141">    public NEs(String nodeId) {</span>
+<span class="fc" id="L142">        this.nodeId = nodeId;</span>
+<span class="fc" id="L143">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

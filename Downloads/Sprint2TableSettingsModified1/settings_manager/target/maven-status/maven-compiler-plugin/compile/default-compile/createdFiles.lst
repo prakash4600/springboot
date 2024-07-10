@@ -1,0 +1,15 @@
+com\fujitsu\fnc\vta\settingsmanager\model\Response$ResponseBuilder.class
+com\fujitsu\fnc\vta\settingsmanager\SettingsManagerApplication.class
+com\fujitsu\fnc\vta\settingsmanager\controller\SettingController.class
+com\fujitsu\fnc\vta\settingsmanager\component\ComponentScheduler.class
+com\fujitsu\fnc\vta\settingsmanager\model\SortingSet.class
+com\fujitsu\fnc\vta\settingsmanager\enums\ResponseStatus.class
+com\fujitsu\fnc\vta\settingsmanager\model\FilterSet.class
+com\fujitsu\fnc\vta\settingsmanager\model\Response.class
+com\fujitsu\fnc\vta\settingsmanager\model\FilterSet$Rule.class
+com\fujitsu\fnc\vta\settingsmanager\model\NEs.class
+com\fujitsu\fnc\vta\settingsmanager\model\SortList.class
+com\fujitsu\fnc\vta\settingsmanager\model\Entity.class
+com\fujitsu\fnc\vta\settingsmanager\model\Filters.class
+com\fujitsu\fnc\vta\settingsmanager\service\SettingsService.class
+com\fujitsu\fnc\vta\settingsmanager\model\Constants.class

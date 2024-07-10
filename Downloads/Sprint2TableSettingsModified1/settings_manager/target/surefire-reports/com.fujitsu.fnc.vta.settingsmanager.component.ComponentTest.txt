@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.fujitsu.fnc.vta.settingsmanager.component.ComponentTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.998 s -- in com.fujitsu.fnc.vta.settingsmanager.component.ComponentTest
